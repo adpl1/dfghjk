@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>انتظار المندوب</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(to bottom right, #f5f5f5, #e0e0e0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .waiting-box {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .spinner {
+      margin: 20px auto;
+      border: 6px solid #ddd;
+      border-top: 6px solid #4CAF50;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="waiting-box">
+    <h2>🚚 جارٍ انتظار موافقة المندوب</h2>
+    <div class="spinner"></div>
+    <p>يرجى الانتظار، سيتم تحويلك تلقائيًا عند قبول الطلب...</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2H29RVbmSd9nzqmcP_e7bBgty3AEdC3I",
+      authDomain: "ssrt-8175a.firebaseapp.com",
+      projectId: "ssrt-8175a",
+      storageBucket: "ssrt-8175a.firebasestorage.app",
+      messagingSenderId: "495122733304",
+      appId: "1:495122733304:web:32adde3b3b63214ae5830d"
+    };
+  
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+  
+    // 1. قراءة orderId من رابط الصفحة
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+  
+    onAuthStateChanged(auth, user => {
+      if (user && orderId) {
+        // 2. استخدم orderId للاستماع لتغييرات الوثيقة الصحيحة في مجموعة "orders"
+        const orderRef = doc(db, "orders", orderId);
+        onSnapshot(orderRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            // 3. إذا تغيّر "status" إلى "accepted"، نوجّه العميل إلى صفحة المحادثة
+            if (data.status === "accepted") {
+              window.location.href = `chat.html?role=client&orderId=${orderId}`;
+            }
+          }
+        });
+      }
+    });
+  </script>
+  
+</body>
+</html>

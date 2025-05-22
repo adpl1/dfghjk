@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>الصفحة الرئيسية - عميل</title>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    body {margin:0;font-family:sans-serif;background:#f0f2f5;padding-bottom:60px;}
+    .header {background:#4e54c8;color:#fff;padding:1rem;text-align:center;font-size:1.5rem;}
+    .content {padding:1rem;}
+    textarea {width:100%;height:120px;padding:.75rem;border:1px solid #ccc;border-radius:.5rem;}
+    button {display:block;width:100%;padding:.75rem;margin-top:1rem;background:#4e54c8;color:#fff;border:none;border-radius:.5rem;font-size:1rem;cursor:pointer;}
+    nav.bottom-nav {position:fixed;bottom:0;left:0;width:100%;height:50px;background:#fff;box-shadow:0 -2px 5px rgba(0,0,0,0.1);display:flex;justify-content:space-around;align-items:center;z-index:100;}
+    nav.bottom-nav a {text-decoration:none;color:#555;font-size:1.2rem;}
+    nav.bottom-nav a.active {color:#4e54c8;}
+  </style>
+</head>
+<body>
+  <div class="header">مرحباً بك</div>
+  <div class="content">
+    <h2>أرسل طلبك:</h2>
+    <textarea id="order-text" placeholder="اكتب تفاصيل طلبك هنا..."></textarea>
+    <button type="button" id="sendBtn" disabled>إرسال الطلب</button>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="client_home.html" class="active">🏠 الرئيسية</a>
+    <a href="account.html">👤 حسابي</a>
+  </nav>
+
+  <script>
+    // تعريف إعدادات Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2H29RVbmSd9nzqmcP_e7bBgty3AEdC3I",
+      authDomain: "ssrt-8175a.firebaseapp.com",
+      projectId: "ssrt-8175a",
+      storageBucket: "ssrt-8175a.appspot.com",
+      messagingSenderId: "495122733304",
+      appId: "1:495122733304:web:32adde3b3b63214ae5830d"
+    };
+    // تهيئة Firebase
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    // الانتظار لجلب حالة المستخدم
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        // إن لم يكن مسجلاً، إعادة التوجيه لصفحة التسجيل
+        window.location = 'index.html';
+      } else {
+        currentUser = user;
+        console.log('👤 مستخدم متصل:', user.uid);
+        // تفعيل زر الإرسال بعد تأكيد الجلسة
+        document.getElementById('sendBtn').disabled = false;
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('sendBtn');
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        console.log('📤 sendOrder called');
+        const text = document.getElementById('order-text').value.trim();
+        console.log('📝 نص الطلب:', text);
+        if (!text) {
+          alert('يرجى كتابة تفاصيل الطلب');
+          return;
+        }
+        if (!currentUser) {
+          alert('حدث خطأ في الجلسة، الرجاء إعادة تسجيل الدخول.');
+          return;
+        }
+        // إضذذذذذذذذذذذذذذذذذذذذذذذذذذذافة الطلب
+        // ...
+// ...
+db.collection('orders').add({
+  uid: currentUser.uid,
+  text,
+  status: 'pending',
+  timestamp: Date.now()
+})
+.then(docRef => {
+  console.log('✅ طلب جديد برقم:', docRef.id);
+  // أرسل معرف الطلب (orderId) إلى صفحة الانتظار
+  window.location = `waiting.html?orderId=${docRef.id}`;
+})
+// ...
+
+        .catch(err => {
+          console.error('❌ فشل في إرسال الطلب:', err);
+          alert('فشل في إرسال الطلب: ' + err.message);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

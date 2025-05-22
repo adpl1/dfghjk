@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>حسابي</title>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { margin:0; font-family:sans-serif; background:#f0f2f5; padding-bottom:60px; }
+    .card {
+      max-width:400px; margin:2rem auto; background:#fff; padding:1.5rem;
+      border-radius:.75rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card h2 { text-align:center; margin-bottom:1rem; color:#4e54c8; }
+    .card p { margin:.5rem 0; font-size:1rem; }
+    .card p span { color:#333; }
+    button.logout {
+      width:100%; padding:.75rem; margin-top:1rem;
+      background:#e74c3c; color:#fff; border:none; border-radius:.5rem;
+      cursor:pointer; font-size:1rem;
+    }
+    nav.bottom-nav {
+      position:fixed; bottom:0; left:0; width:100%; height:50px;
+      background:#fff; box-shadow:0 -2px 5px rgba(0,0,0,0.1);
+      display:flex; justify-content:space-around; align-items:center;
+    }
+    nav.bottom-nav a { text-decoration:none; color:#555; font-size:1.2rem; }
+    nav.bottom-nav a.active { color:#4e54c8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>معلومات حسابي</h2>
+    <p><strong>الاسم:</strong> <span id="name">...</span></p>
+    <p><strong>البريد:</strong> <span id="email">...</span></p>
+    <p><strong>الدور:</strong> <span id="role">...</span></p>
+    <button class="logout" onclick="logout()">تسجيل خروج</button>
+  </div>
+
+  <nav class="bottom-nav">
+    <!-- نضع كلا الرابطين للحالات المختلفة -->
+    <a href="client_home.html">🏠 الرئيسية</a>
+    <a href="driver_home.html">📦 الطلبات</a>
+    <a href="account.html" class="active">👤 حسابي</a>
+  </nav>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2H29RVbmSd9nzqmcP_e7bBgty3AEdC3I",
+      authDomain: "ssrt-8175a.firebaseapp.com",
+      projectId: "ssrt-8175a",
+      storageBucket: "ssrt-8175a.firebasestorage.app",
+      messagingSenderId: "495122733304",
+      appId: "1:495122733304:web:32adde3b3b63214ae5830d"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth(), db = firebase.firestore();
+
+    auth.onAuthStateChanged(u => {
+      if (!u) return window.location = 'index.html';
+      db.collection('users').doc(u.uid).get()
+        .then(doc => {
+          const d = doc.data();
+          document.getElementById('name').textContent = d.name;
+          document.getElementById('email').textContent = d.email;
+          document.getElementById('role').textContent = 
+            d.role === 'client' ? 'عميل' : 'مندوب';
+        });
+    });
+
+    function logout(){
+      auth.signOut().then(() => location = 'index.html');
+    }
+  </script>
+</body>
+</html>
